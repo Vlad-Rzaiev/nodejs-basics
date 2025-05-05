@@ -1,8 +1,9 @@
 import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
+import { getEnvVar } from './utils/getEnvVar.js';
 
-const PORT = 7777;
+const PORT = Number(getEnvVar('PORT', '7777'));
 
 export const startServer = () => {
   const app = express();
