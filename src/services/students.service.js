@@ -11,3 +11,9 @@ export const getStudentById = async (studentId) => {
 
   return student;
 };
+
+export const createStudent = async (payload) => {
+  const student = await StudentCollection.create(payload);
+
+  return student;
+};
