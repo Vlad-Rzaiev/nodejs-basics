@@ -17,3 +17,32 @@ export const createStudent = async (payload) => {
 
   return student;
 };
+
+export const deleteStudent = async (studentId) => {
+  const student = await StudentCollection.findOneAndDelete({
+    _id: studentId,
+  });
+
+  return student;
+};
+
+export const upsertStudent = async (studentId, payload, options = {}) => {
+  const data = await StudentCollection.findOneAndUpdate(
+    {
+      _id: studentId,
+    },
+    payload,
+    {
+      new: true,
+      includeResultMetadata: true,
+      ...options,
+    },
+  );
+
+  if (!data || !data.value) return null;
+
+  return {
+    student: data.value,
+    isNew: Boolean(data?.lastErrorObject?.upserted),
+  };
+};
