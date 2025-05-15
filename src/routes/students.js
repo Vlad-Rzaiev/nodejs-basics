@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import {
   createStudentController,
   deleteStudentController,
@@ -10,17 +10,30 @@ import {
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 const router = Router();
+const jsonParser = express.json();
 
 router.get('/students', ctrlWrapper(getStudentsController));
 
 router.get('/students/:studentId', ctrlWrapper(getStudentByIdController));
 
-router.post('/students', ctrlWrapper(createStudentController));
+router.post('/students', jsonParser, ctrlWrapper(createStudentController));
 
-router.delete('/students/:studentId', ctrlWrapper(deleteStudentController));
+router.delete(
+  '/students/:studentId',
+  jsonParser,
+  ctrlWrapper(deleteStudentController),
+);
 
-router.put('/students/:studentId', ctrlWrapper(upsertStudentController));
+router.put(
+  '/students/:studentId',
+  jsonParser,
+  ctrlWrapper(upsertStudentController),
+);
 
-router.patch('/students/:studentId', ctrlWrapper(patchStudentController));
+router.patch(
+  '/students/:studentId',
+  jsonParser,
+  ctrlWrapper(patchStudentController),
+);
 
 export default router;
