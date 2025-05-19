@@ -8,31 +8,46 @@ import {
   upsertStudentController,
 } from '../controllers/students.controller.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import {
+  createStudentsSchema,
+  updateStudentsSchema,
+} from '../validation/students.js';
+import { isValidId } from '../middlewares/isValidId.js';
 
 const router = Router();
 const jsonParser = express.json();
 
 router.get('/students', ctrlWrapper(getStudentsController));
 
-router.get('/students/:studentId', ctrlWrapper(getStudentByIdController));
-
-router.post('/students', jsonParser, ctrlWrapper(createStudentController));
-
-router.delete(
+router.get(
   '/students/:studentId',
-  jsonParser,
-  ctrlWrapper(deleteStudentController),
+  isValidId,
+  ctrlWrapper(getStudentByIdController),
 );
+
+router.post(
+  '/students',
+  jsonParser,
+  validateBody(createStudentsSchema),
+  ctrlWrapper(createStudentController),
+);
+
+router.delete('/students/:studentId', ctrlWrapper(deleteStudentController));
 
 router.put(
   '/students/:studentId',
+  isValidId,
   jsonParser,
+  validateBody(createStudentsSchema),
   ctrlWrapper(upsertStudentController),
 );
 
 router.patch(
   '/students/:studentId',
+  isValidId,
   jsonParser,
+  validateBody(updateStudentsSchema),
   ctrlWrapper(patchStudentController),
 );
 
