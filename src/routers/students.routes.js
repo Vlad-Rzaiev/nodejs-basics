@@ -12,7 +12,7 @@ import { validateBody } from '../middlewares/validateBody.js';
 import {
   createStudentsSchema,
   updateStudentsSchema,
-} from '../validation/students.js';
+} from '../validation/student.js';
 import { isValidId } from '../middlewares/isValidId.js';
 
 const router = Router();
