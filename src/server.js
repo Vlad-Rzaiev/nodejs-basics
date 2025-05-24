@@ -2,7 +2,7 @@ import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import { getEnvVar } from './utils/getEnvVar.js';
-import studentsRouter from './routers/students.routes.js';
+import router from './routers/index.routes.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
@@ -21,18 +21,7 @@ export const startServer = () => {
     }),
   );
 
-  app.use((req, res, next) => {
-    console.log(`Time: ${new Date().toLocaleString()}`);
-    next();
-  });
-
-  app.get('/', (req, res) => {
-    res.json({
-      message: 'Hello World',
-    });
-  });
-
-  app.use(studentsRouter);
+  app.use(router);
 
   app.use(notFoundHandler);
 

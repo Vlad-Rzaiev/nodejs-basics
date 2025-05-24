@@ -18,25 +18,21 @@ import { isValidId } from '../middlewares/isValidId.js';
 const router = Router();
 const jsonParser = express.json();
 
-router.get('/students', ctrlWrapper(getStudentsController));
+router.get('/', ctrlWrapper(getStudentsController));
 
-router.get(
-  '/students/:studentId',
-  isValidId,
-  ctrlWrapper(getStudentByIdController),
-);
+router.get('/:studentId', isValidId, ctrlWrapper(getStudentByIdController));
 
 router.post(
-  '/students',
+  '/',
   jsonParser,
   validateBody(createStudentsSchema),
   ctrlWrapper(createStudentController),
 );
 
-router.delete('/students/:studentId', ctrlWrapper(deleteStudentController));
+router.delete('/:studentId', isValidId, ctrlWrapper(deleteStudentController));
 
 router.put(
-  '/students/:studentId',
+  '/:studentId',
   isValidId,
   jsonParser,
   validateBody(createStudentsSchema),
@@ -44,7 +40,7 @@ router.put(
 );
 
 router.patch(
-  '/students/:studentId',
+  '/:studentId',
   isValidId,
   jsonParser,
   validateBody(updateStudentsSchema),
