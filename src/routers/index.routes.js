@@ -5,12 +5,6 @@ import authRouter from '../routers/auth.routes.js';
 const router = Router();
 
 router.use('/students', studentsRouter);
-router.use('/register', authRouter);
+router.use('/auth', authRouter);
 
 export default router;
-
-// {
-//     "name": "Charlotte Lee",
-//     "email": "test@gmail.com",
-//     "password": "123456789"
-//   }

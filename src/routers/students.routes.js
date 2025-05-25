@@ -14,9 +14,12 @@ import {
   updateStudentsSchema,
 } from '../validation/student.js';
 import { isValidId } from '../middlewares/isValidId.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 const router = Router();
 const jsonParser = express.json();
+
+router.use(authenticate);
 
 router.get('/', ctrlWrapper(getStudentsController));
 
