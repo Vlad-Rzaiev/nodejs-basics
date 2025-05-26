@@ -15,27 +15,34 @@ import {
 } from '../validation/student.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { checkRoles } from '../middlewares/checkRoles.js';
+import { ROLES } from '../constants/index.js';
 
 const router = Router();
 const jsonParser = express.json();
 
 router.use(authenticate);
 
-router.get('/', ctrlWrapper(getStudentsController));
+router.get('/', checkRoles(ROLES.TEACHER), ctrlWrapper(getStudentsController));
 
-router.get('/:studentId', isValidId, ctrlWrapper(getStudentByIdController));
+router.get(
+  '/:studentId',
+  checkRoles(ROLES.TEACHER, ROLES.PARENT),
+  isValidId,
+  ctrlWrapper(getStudentByIdController),
+);
 
 router.post(
   '/',
+  checkRoles(ROLES.TEACHER),
   jsonParser,
   validateBody(createStudentsSchema),
   ctrlWrapper(createStudentController),
 );
 
-router.delete('/:studentId', isValidId, ctrlWrapper(deleteStudentController));
-
 router.put(
   '/:studentId',
+  checkRoles(ROLES.TEACHER),
   isValidId,
   jsonParser,
   validateBody(createStudentsSchema),
@@ -44,10 +51,18 @@ router.put(
 
 router.patch(
   '/:studentId',
+  checkRoles(ROLES.TEACHER, ROLES.PARENT),
   isValidId,
   jsonParser,
   validateBody(updateStudentsSchema),
   ctrlWrapper(patchStudentController),
+);
+
+router.delete(
+  '/:studentId',
+  checkRoles(ROLES.TEACHER),
+  isValidId,
+  ctrlWrapper(deleteStudentController),
 );
 
 export default router;
