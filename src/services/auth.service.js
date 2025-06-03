@@ -1,9 +1,20 @@
-import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 import { UsersCollection } from '../db/models/user.model.js';
 import { SessionsCollection } from '../db/models/session.model.js';
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/index.js';
+import {
+  FIFTEEN_MINUTES,
+  ONE_DAY,
+  SMTP,
+  TEMPLATES_DIR,
+} from '../constants/index.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+import { sendEmail } from '../utils/sendmail.js';
+import path from 'path';
+import fs from 'node:fs/promises';
+import handlebars from 'handlebars';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({
@@ -82,4 +93,78 @@ export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
     userId: session.userId,
     ...newSession,
   });
+};
+
+export const requestResetToken = async (email) => {
+  const user = await UsersCollection.findOne({ email });
+
+  if (!user) throw createHttpError(404, 'User not found.');
+
+  const resetToken = jwt.sign(
+    {
+      sub: user._id,
+      email,
+    },
+    getEnvVar('JWT_SECRET'),
+    {
+      expiresIn: '15m',
+    },
+  );
+
+  const resetPasswordTemplatePath = path.join(
+    TEMPLATES_DIR,
+    'reset-password-email.hbs',
+  );
+
+  const templateSource = (
+    await fs.readFile(resetPasswordTemplatePath)
+  ).toString();
+
+  const template = handlebars.compile(templateSource);
+
+  const html = template({
+    name: user.name,
+    link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
+  });
+
+  await sendEmail({
+    from: getEnvVar(SMTP.SMTP_FROM),
+    to: email,
+    subject: 'Request for reset your password',
+    html,
+  });
+};
+
+export const resetPassword = async (payload) => {
+  try {
+    const entries = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
+
+    const user = await UsersCollection.findOne({
+      email: entries.email,
+      _id: entries.sub,
+    });
+
+    if (!user) {
+      throw createHttpError(404, 'User not found');
+    }
+
+    const isEqual = await bcrypt.compare(payload.password, user.password);
+    if (isEqual) {
+      throw createHttpError(
+        400,
+        'New password cannot be the same as the current password.',
+      );
+    }
+
+    const encryptedPassword = await bcrypt.hash(payload.password, 10);
+
+    await UsersCollection.findOneAndUpdate(
+      { _id: user._id },
+      { password: encryptedPassword },
+    );
+  } catch (err) {
+    if (err.status) throw err;
+    if (err instanceof Error) throw createHttpError(401, err.message);
+    throw err;
+  }
 };
